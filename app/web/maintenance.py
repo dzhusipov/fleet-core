@@ -17,7 +17,7 @@ router = APIRouter(prefix="/maintenance", tags=["web-maintenance"])
 @router.get("", response_class=HTMLResponse)
 async def maintenance_list(
     request: Request,
-    status: MaintenanceStatus | None = None,
+    status: str | None = None,
     page: int = Query(1, ge=1),
     size: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
@@ -25,14 +25,15 @@ async def maintenance_list(
     user = await get_web_user(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    status_enum = MaintenanceStatus(status) if status else None
     service = MaintenanceService(db)
-    items, total = await service.list_all(status=status, page=page, size=size)
+    items, total = await service.list_all(status=status_enum, page=page, size=size)
     pages = BaseRepository.calc_pages(total, size)
     return request.app.state.templates.TemplateResponse(
         "maintenance/list.html",
         {"request": request, "user": user, "active_page": "maintenance",
          "records": items, "total": total, "page": page, "size": size, "pages": pages,
-         "status_filter": status, "statuses": MaintenanceStatus,
+         "status_filter": status_enum, "statuses": MaintenanceStatus,
          **request.app.state.template_globals(request)},
     )
 

@@ -18,7 +18,7 @@ router = APIRouter(prefix="/drivers", tags=["web-drivers"])
 async def driver_list(
     request: Request,
     q: str | None = None,
-    status: DriverStatus | None = None,
+    status: str | None = None,
     page: int = Query(1, ge=1),
     size: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
@@ -27,8 +27,9 @@ async def driver_list(
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
+    status_enum = DriverStatus(status) if status else None
     service = DriverService(db)
-    drivers, total = await service.list_drivers(q=q, status=status, page=page, size=size)
+    drivers, total = await service.list_drivers(q=q, status=status_enum, page=page, size=size)
     pages = BaseRepository.calc_pages(total, size)
 
     return request.app.state.templates.TemplateResponse(
@@ -36,7 +37,7 @@ async def driver_list(
         {
             "request": request, "user": user, "active_page": "drivers",
             "drivers": drivers, "total": total, "page": page, "size": size,
-            "pages": pages, "q": q, "status_filter": status,
+            "pages": pages, "q": q, "status_filter": status_enum,
             "statuses": DriverStatus,
             **request.app.state.template_globals(request),
         },

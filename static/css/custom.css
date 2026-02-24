@@ -38,11 +38,35 @@ tbody tr {
     transition: background-color 0.15s ease;
 }
 
-/* Status badges */
-.badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+/* Flatpickr customization — larger calendar */
+.flatpickr-calendar {
+    font-size: 14px !important;
+    width: 340px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
 }
-.badge-active { @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400; }
-.badge-maintenance { @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400; }
-.badge-decommissioned { @apply bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400; }
-.badge-reserved { @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400; }
+.flatpickr-day {
+    max-width: 42px !important;
+    height: 42px !important;
+    line-height: 42px !important;
+    border-radius: 8px !important;
+}
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+}
+.flatpickr-day.today:not(.selected) {
+    border-color: #3b82f6 !important;
+}
+.flatpickr-months {
+    padding: 8px 0 !important;
+}
+.flatpickr-current-month {
+    font-size: 15px !important;
+}
+span.flatpickr-weekday {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+}

@@ -1,12 +1,19 @@
 from uuid import UUID
 
-from fastapi import Depends, Request
-from fastapi.responses import RedirectResponse
+from fastapi import Depends, HTTPException, Request
+from starlette.status import HTTP_303_SEE_OTHER
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.user import User, UserRole
 from app.repositories.user_repo import UserRepository
+
+
+class WebRedirectException(HTTPException):
+    """Exception that triggers a redirect in web routes."""
+
+    def __init__(self, url: str):
+        super().__init__(status_code=HTTP_303_SEE_OTHER, headers={"Location": url})
 
 
 async def get_web_user(request: Request, db: AsyncSession = Depends(get_db)) -> User | None:
@@ -26,7 +33,7 @@ async def require_web_user(request: Request, db: AsyncSession = Depends(get_db))
     """Require authenticated user, redirect to login if not."""
     user = await get_web_user(request, db)
     if not user:
-        return RedirectResponse(url="/login", status_code=302)
+        raise WebRedirectException("/login")
     return user
 
 
@@ -36,9 +43,9 @@ def web_require_roles(*roles: UserRole):
     async def check_role(request: Request, db: AsyncSession = Depends(get_db)) -> User:
         user = await get_web_user(request, db)
         if not user:
-            return RedirectResponse(url="/login", status_code=302)
+            raise WebRedirectException("/login")
         if user.role not in roles:
-            return RedirectResponse(url="/", status_code=302)
+            raise WebRedirectException("/")
         return user
 
     return check_role

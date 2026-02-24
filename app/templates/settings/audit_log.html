@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ _('nav.audit_log') }} — {{ _('app_name') }}{% endblock %}
+{% block page_title %}{{ _('nav.audit_log') }}{% endblock %}
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+    <form method="GET" class="flex flex-wrap items-center gap-3">
+        <select name="action" class="h-10 px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">
+            <option value="">{{ _('settings.all_actions') }}</option>
+            <option value="create" {% if action_filter == 'create' %}selected{% endif %}>Create</option>
+            <option value="update" {% if action_filter == 'update' %}selected{% endif %}>Update</option>
+            <option value="delete" {% if action_filter == 'delete' %}selected{% endif %}>Delete</option>
+            <option value="login" {% if action_filter == 'login' %}selected{% endif %}>Login</option>
+            <option value="export" {% if action_filter == 'export' %}selected{% endif %}>Export</option>
+        </select>
+        <select name="entity_type" class="h-10 px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">
+            <option value="">{{ _('settings.all_entities') }}</option>
+            <option value="vehicle" {% if entity_type_filter == 'vehicle' %}selected{% endif %}>Vehicle</option>
+            <option value="driver" {% if entity_type_filter == 'driver' %}selected{% endif %}>Driver</option>
+            <option value="maintenance" {% if entity_type_filter == 'maintenance' %}selected{% endif %}>Maintenance</option>
+            <option value="expense" {% if entity_type_filter == 'expense' %}selected{% endif %}>Expense</option>
+            <option value="contract" {% if entity_type_filter == 'contract' %}selected{% endif %}>Contract</option>
+            <option value="user" {% if entity_type_filter == 'user' %}selected{% endif %}>User</option>
+        </select>
+        <button type="submit" class="h-10 px-4 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg">{{ _('btn.filter') }}</button>
+    </form>
+</div>
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                    <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('settings.timestamp') }}</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('settings.user') }}</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('settings.action') }}</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('settings.entity') }}</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('settings.details') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                {% for log in logs %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else '—' }}</td>
+                    <td class="px-4 py-3">
+                        {% if log.user %}
+                        <span class="font-medium">{{ log.user.full_name }}</span>
+                        {% else %}
+                        <span class="text-gray-400">{{ _('settings.system') }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if log.action.value == 'create' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                            {% elif log.action.value == 'update' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
+                            {% elif log.action.value == 'delete' %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
+                            {% elif log.action.value == 'login' %}bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400
+                            {% else %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400{% endif %}">
+                            {{ log.action.value }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="text-gray-500">{{ log.entity_type }}</span>
+                        {% if log.entity_id %}
+                        <span class="text-xs text-gray-400 font-mono ml-1">{{ log.entity_id|string|truncate(8, True, '') }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate">
+                        {% if log.changes %}
+                        {{ log.changes|tojson|truncate(80) }}
+                        {% elif log.ip_address %}
+                        IP: {{ log.ip_address }}
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">{{ _('common.no_data') }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pages > 1 %}
+    <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <p class="text-sm text-gray-500">{{ total }} {{ _('settings.records_total') }}</p>
+        <div class="flex gap-1">
+            {% for p in range(1, pages+1) %}
+            {% if p == page %}
+            <span class="px-3 py-1.5 text-sm rounded-lg bg-primary-600 text-white">{{ p }}</span>
+            {% else %}
+            <a href="?page={{ p }}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if entity_type_filter %}&entity_type={{ entity_type_filter }}{% endif %}" class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">{{ p }}</a>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

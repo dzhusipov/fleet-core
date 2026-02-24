@@ -18,7 +18,7 @@ router = APIRouter(prefix="/vehicles", tags=["web-vehicles"])
 async def vehicle_list(
     request: Request,
     q: str | None = None,
-    status: VehicleStatus | None = None,
+    status: str | None = None,
     brand: str | None = None,
     page: int = Query(1, ge=1),
     size: int = Query(50, ge=1, le=200),
@@ -28,8 +28,9 @@ async def vehicle_list(
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
+    status_enum = VehicleStatus(status) if status else None
     service = VehicleService(db)
-    vehicles, total = await service.list_vehicles(q=q, status=status, brand=brand, page=page, size=size)
+    vehicles, total = await service.list_vehicles(q=q, status=status_enum, brand=brand, page=page, size=size)
     pages = BaseRepository.calc_pages(total, size)
 
     return request.app.state.templates.TemplateResponse(
@@ -44,7 +45,7 @@ async def vehicle_list(
             "size": size,
             "pages": pages,
             "q": q,
-            "status_filter": status,
+            "status_filter": status_enum,
             "brand_filter": brand,
             "statuses": VehicleStatus,
             **request.app.state.template_globals(request),

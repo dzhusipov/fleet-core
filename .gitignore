@@ -13,10 +13,10 @@ build/
 venv/
 env/
 
-# Environment
+# Environment (all .env files — secrets live in Vault)
 .env
-.env.local
-.env.*.local
+.env.*
+*.env
 
 # IDE
 .idea/

@@ -17,7 +17,7 @@ router = APIRouter(prefix="/expenses", tags=["web-expenses"])
 @router.get("", response_class=HTMLResponse)
 async def expense_list(
     request: Request,
-    category: ExpenseCategory | None = None,
+    category: str | None = None,
     page: int = Query(1, ge=1),
     size: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
@@ -25,14 +25,15 @@ async def expense_list(
     user = await get_web_user(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    category_enum = ExpenseCategory(category) if category else None
     service = ExpenseService(db)
-    items, total = await service.list_all(category=category, page=page, size=size)
+    items, total = await service.list_all(category=category_enum, page=page, size=size)
     pages = BaseRepository.calc_pages(total, size)
     return request.app.state.templates.TemplateResponse(
         "expenses/list.html",
         {"request": request, "user": user, "active_page": "expenses",
          "expenses": items, "total": total, "page": page, "size": size, "pages": pages,
-         "category_filter": category, "categories": ExpenseCategory,
+         "category_filter": category_enum, "categories": ExpenseCategory,
          **request.app.state.template_globals(request)},
     )
 

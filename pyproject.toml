@@ -34,6 +34,8 @@ dependencies = [
     "qrcode[pil]>=8.0",
     # HTTP client (for Telegram, etc.)
     "httpx>=0.28.0",
+    # Vault
+    "hvac>=2.3.0",
     # Email
     "aiosmtplib>=3.0.2",
     # Starlette sessions

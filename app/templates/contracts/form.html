@@ -3,32 +3,57 @@
 {% block page_title %}{{ _('btn.create') }}{% endblock %}
 {% block content %}
 <div class="max-w-3xl">
-    {% if error %}<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{{ error }}</div>{% endif %}
-    <form method="POST" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+    {% if error %}<div class="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">{{ error }}</div>{% endif %}
+    <form method="POST" class="fc-card p-6 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium mb-1">Vehicle ID</label>
-            <input type="text" name="vehicle_id" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"></div>
-            <div><label class="block text-sm font-medium mb-1">Type</label>
-            <select name="type" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">{% for t in types %}<option value="{{ t.value }}">{{ t.value }}</option>{% endfor %}</select></div>
-            <div><label class="block text-sm font-medium mb-1">Contractor</label>
-            <input type="text" name="contractor" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"></div>
-            <div><label class="block text-sm font-medium mb-1">Contract Number</label>
-            <input type="text" name="contract_number" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"></div>
-            <div><label class="block text-sm font-medium mb-1">Start Date</label>
-            <input type="date" name="start_date" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"></div>
-            <div><label class="block text-sm font-medium mb-1">End Date</label>
-            <input type="date" name="end_date" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"></div>
-            <div><label class="block text-sm font-medium mb-1">Amount</label>
-            <input type="number" name="amount" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"></div>
-            <div><label class="block text-sm font-medium mb-1">Payment Frequency</label>
-            <select name="payment_frequency" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">{% for f in frequencies %}<option value="{{ f.value }}">{{ f.value }}</option>{% endfor %}</select></div>
+            <div>
+                <label class="fc-label">{{ _('expense.vehicle') }}</label>
+                <input type="text" name="vehicle_id" required class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('common.type') }}</label>
+                <select name="type" class="fc-select">
+                    {% for t in types %}<option value="{{ t.value }}">{{ _('contract_type.' + t.value) }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="fc-label">{{ _('contract.contractor') }}</label>
+                <input type="text" name="contractor" required class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('contract.contract_number') }}</label>
+                <input type="text" name="contract_number" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('contract.start_date') }}</label>
+                <input type="date" name="start_date" required class="fc-input-date">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('contract.end_date') }}</label>
+                <input type="date" name="end_date" required class="fc-input-date">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('common.amount') }}</label>
+                <input type="number" name="amount" step="0.01" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('contract.payment_frequency') }}</label>
+                <select name="payment_frequency" class="fc-select">
+                    {% for f in frequencies %}<option value="{{ f.value }}">{{ _('payment_frequency.' + f.value) }}</option>{% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="flex items-center gap-2"><input type="checkbox" name="auto_renew" class="rounded"><label class="text-sm">Auto-renew</label></div>
-        <div><label class="block text-sm font-medium mb-1">Notes</label>
-        <textarea name="notes" rows="3" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none"></textarea></div>
+        <div class="flex items-center gap-2">
+            <input type="checkbox" name="auto_renew" class="fc-checkbox">
+            <label class="text-sm text-gray-700 dark:text-gray-300">{{ _('contract.auto_renew') }}</label>
+        </div>
+        <div>
+            <label class="fc-label">{{ _('common.notes') }}</label>
+            <textarea name="notes" rows="3" class="fc-textarea"></textarea>
+        </div>
         <div class="flex items-center gap-3">
-            <button type="submit" class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg font-medium">{{ _('btn.save') }}</button>
-            <a href="/contracts" class="px-6 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">{{ _('btn.cancel') }}</a>
+            <button type="submit" class="fc-btn-primary">{{ _('btn.save') }}</button>
+            <a href="/contracts" class="fc-btn-secondary">{{ _('btn.cancel') }}</a>
         </div>
     </form>
 </div>

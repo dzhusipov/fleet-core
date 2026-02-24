@@ -11,53 +11,92 @@
     </div>
     {% endif %}
 
-    <form method="POST" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+    <form method="POST" class="fc-card p-6 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {% macro input(name, label, type="text", value="", required=false, placeholder="") %}
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ label }}</label>
-                <input type="{{ type }}" name="{{ name }}" value="{{ value }}" {% if required %}required{% endif %} placeholder="{{ placeholder }}"
-                       class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none focus:ring-2 focus:ring-primary-500">
+                <label class="fc-label">{{ _('vehicle.license_plate') }}</label>
+                <input type="text" name="license_plate" value="{{ vehicle.license_plate if vehicle else '' }}" required placeholder="123 ABC 01" class="fc-input">
             </div>
-            {% endmacro %}
-
-            {% macro sel(name, label, options, current="") %}
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ label }}</label>
-                <select name="{{ name }}" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">
-                    {% for opt in options %}
-                    <option value="{{ opt.value }}" {% if opt.value == current %}selected{% endif %}>{{ opt.value }}</option>
+                <label class="fc-label">{{ _('vehicle.vin') }}</label>
+                <input type="text" name="vin" value="{{ vehicle.vin if vehicle else '' }}" required placeholder="17 characters" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.brand') }}</label>
+                <input type="text" name="brand" value="{{ vehicle.brand if vehicle else '' }}" required placeholder="Toyota" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.model') }}</label>
+                <input type="text" name="model" value="{{ vehicle.model if vehicle else '' }}" required placeholder="Camry" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.year') }}</label>
+                <input type="number" name="year" value="{{ vehicle.year if vehicle else '2024' }}" required class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.color') }}</label>
+                <input type="text" name="color" value="{{ vehicle.color if vehicle else '' }}" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.body_type') }}</label>
+                <select name="body_type" class="fc-select">
+                    {% for opt in body_types %}
+                    <option value="{{ opt.value }}" {% if vehicle and opt.value == vehicle.body_type.value %}selected{% endif %}>{{ _('body_type.' + opt.value) }}</option>
                     {% endfor %}
                 </select>
             </div>
-            {% endmacro %}
-
-            {{ input("license_plate", "License Plate", value=vehicle.license_plate if vehicle else "", required=true, placeholder="123 ABC 01") }}
-            {{ input("vin", "VIN", value=vehicle.vin if vehicle else "", required=true, placeholder="17 characters") }}
-            {{ input("brand", "Brand", value=vehicle.brand if vehicle else "", required=true, placeholder="Toyota") }}
-            {{ input("model", "Model", value=vehicle.model if vehicle else "", required=true, placeholder="Camry") }}
-            {{ input("year", "Year", type="number", value=vehicle.year if vehicle else "2024", required=true) }}
-            {{ input("color", "Color", value=vehicle.color if vehicle else "") }}
-            {{ sel("body_type", "Body Type", body_types, vehicle.body_type.value if vehicle else "sedan") }}
-            {{ sel("fuel_type", "Fuel Type", fuel_types, vehicle.fuel_type.value if vehicle else "gasoline") }}
-            {{ input("engine_volume", "Engine Volume (L)", type="number", value=vehicle.engine_volume if vehicle and vehicle.engine_volume else "") }}
-            {{ sel("transmission", "Transmission", transmission_types, vehicle.transmission.value if vehicle else "automatic") }}
-            {{ input("seats", "Seats", type="number", value=vehicle.seats if vehicle and vehicle.seats else "") }}
-            {{ input("purchase_price", "Purchase Price", type="number", value=vehicle.purchase_price if vehicle and vehicle.purchase_price else "") }}
-            {{ input("department", "Department", value=vehicle.department if vehicle and vehicle.department else "") }}
+            <div>
+                <label class="fc-label">{{ _('vehicle.fuel_type') }}</label>
+                <select name="fuel_type" class="fc-select">
+                    {% for opt in fuel_types %}
+                    <option value="{{ opt.value }}" {% if vehicle and opt.value == vehicle.fuel_type.value %}selected{% endif %}>{{ _('fuel_type.' + opt.value) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.engine_volume') }} (L)</label>
+                <input type="number" name="engine_volume" value="{{ vehicle.engine_volume if vehicle and vehicle.engine_volume else '' }}" step="0.1" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.transmission') }}</label>
+                <select name="transmission" class="fc-select">
+                    {% for opt in transmission_types %}
+                    <option value="{{ opt.value }}" {% if vehicle and opt.value == vehicle.transmission.value %}selected{% endif %}>{{ _('transmission.' + opt.value) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.seats') }}</label>
+                <input type="number" name="seats" value="{{ vehicle.seats if vehicle and vehicle.seats else '' }}" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.purchase_price') }}</label>
+                <input type="number" name="purchase_price" value="{{ vehicle.purchase_price if vehicle and vehicle.purchase_price else '' }}" step="0.01" class="fc-input">
+            </div>
+            <div>
+                <label class="fc-label">{{ _('vehicle.department') }}</label>
+                <input type="text" name="department" value="{{ vehicle.department if vehicle and vehicle.department else '' }}" class="fc-input">
+            </div>
             {% if vehicle %}
-            {{ sel("status", "Status", statuses, vehicle.status.value) }}
+            <div>
+                <label class="fc-label">{{ _('common.status') }}</label>
+                <select name="status" class="fc-select">
+                    {% for opt in statuses %}
+                    <option value="{{ opt.value }}" {% if opt.value == vehicle.status.value %}selected{% endif %}>{{ _('status.' + opt.value) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             {% endif %}
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-            <textarea name="notes" rows="3" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none focus:ring-2 focus:ring-primary-500">{{ vehicle.notes if vehicle and vehicle.notes else "" }}</textarea>
+            <label class="fc-label">{{ _('common.notes') }}</label>
+            <textarea name="notes" rows="3" class="fc-textarea">{{ vehicle.notes if vehicle and vehicle.notes else "" }}</textarea>
         </div>
 
         <div class="flex items-center gap-3">
-            <button type="submit" class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg font-medium">{{ _('btn.save') }}</button>
-            <a href="/vehicles{% if vehicle %}/{{ vehicle.id }}{% endif %}" class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">{{ _('btn.cancel') }}</a>
+            <button type="submit" class="fc-btn-primary">{{ _('btn.save') }}</button>
+            <a href="/vehicles{% if vehicle %}/{{ vehicle.id }}{% endif %}" class="fc-btn-secondary">{{ _('btn.cancel') }}</a>
         </div>
     </form>
 </div>

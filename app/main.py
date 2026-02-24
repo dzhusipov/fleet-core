@@ -6,8 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
+from fastapi.responses import RedirectResponse
+
 from app.config import settings
 from app.i18n import _, get_available_languages, load_translations
+from app.web.deps import WebRedirectException
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
@@ -56,6 +59,11 @@ def create_app() -> FastAPI:
         }
 
     application.state.template_globals = template_globals
+
+    # Redirect exception handler (for web auth redirects)
+    @application.exception_handler(WebRedirectException)
+    async def redirect_exception_handler(request: Request, exc: WebRedirectException):
+        return RedirectResponse(url=exc.headers["Location"], status_code=302)
 
     # Static files
     application.mount("/static", StaticFiles(directory="static"), name="static")

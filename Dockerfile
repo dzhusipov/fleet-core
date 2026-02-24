@@ -5,27 +5,35 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
-    libgdk-pixbuf2.0-0 \
+    libgdk-pixbuf-2.0-0 \
     libffi-dev \
     libcairo2 \
     libglib2.0-0 \
     shared-mime-info \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install uv for fast dependency resolution
-RUN pip install --no-cache-dir uv
-
-# Copy dependency files
+# Copy dependency files first for layer caching
 COPY pyproject.toml .
 
-# Install dependencies
-RUN uv pip install --system -e ".[dev]"
+# Install dependencies (non-editable, then copy source)
+RUN pip install --no-cache-dir pip setuptools wheel hatchling \
+    && pip install --no-cache-dir "bcrypt==4.0.1" \
+    && pip install --no-cache-dir .
 
-# Copy application
+# Copy application source
 COPY . .
+
+# Re-install in editable mode now that source is present
+RUN pip install --no-cache-dir -e .
+
+# Copy entrypoint
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

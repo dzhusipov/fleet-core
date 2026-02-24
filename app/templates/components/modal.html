@@ -1,0 +1,11 @@
+<!-- Usage: include with x-data="{ modalOpen: false }" on parent -->
+<div x-show="modalOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div x-show="modalOpen" @click="modalOpen = false" class="absolute inset-0 bg-black/50"></div>
+    <div x-show="modalOpen"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-6">
+        {% block modal_content %}{% endblock %}
+    </div>
+</div>

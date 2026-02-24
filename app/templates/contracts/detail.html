@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ contract.contractor }} — {{ _('app_name') }}{% endblock %}
+{% block page_title %}{{ contract.contractor }} — {{ contract.type.value }}{% endblock %}
+{% block content %}
+<div class="mb-4"><a href="/contracts" class="text-gray-500 hover:text-gray-700"><svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> Back</a></div>
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% macro field(label, value) %}<div><dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ label }}</dt><dd class="mt-1 text-sm">{{ value or '—' }}</dd></div>{% endmacro %}
+        {{ field('Type', contract.type.value) }}
+        {{ field('Contractor', contract.contractor) }}
+        {{ field('Contract Number', contract.contract_number) }}
+        {{ field('Start Date', contract.start_date) }}
+        {{ field('End Date', contract.end_date) }}
+        {{ field('Amount', contract.amount) }}
+        {{ field('Payment Frequency', contract.payment_frequency.value) }}
+        {{ field('Status', contract.status.value) }}
+        {{ field('Auto-renew', 'Yes' if contract.auto_renew else 'No') }}
+    </div>
+    {% if contract.notes %}<div class="mt-6 pt-6 border-t border-gray-200"><p class="text-sm whitespace-pre-wrap">{{ contract.notes }}</p></div>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import get_current_user, require_fleet_manager
+from app.database import get_db
+from app.models.driver import DriverStatus
+from app.models.user import User
+from app.repositories.base import BaseRepository
+from app.schemas.common import PaginatedResponse
+from app.schemas.driver import DriverCreate, DriverRead, DriverUpdate
+from app.services.driver_service import DriverService
+
+router = APIRouter(prefix="/drivers", tags=["drivers"])
+
+
+@router.get("", response_model=PaginatedResponse[DriverRead])
+async def list_drivers(
+    q: str | None = None,
+    status: DriverStatus | None = None,
+    page: int = Query(1, ge=1),
+    size: int = Query(50, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    service = DriverService(db)
+    items, total = await service.list_drivers(q=q, status=status, page=page, size=size)
+    return PaginatedResponse(
+        items=[DriverRead.model_validate(d) for d in items],
+        total=total, page=page, size=size,
+        pages=BaseRepository.calc_pages(total, size),
+    )
+
+
+@router.get("/{driver_id}", response_model=DriverRead)
+async def get_driver(driver_id: UUID, db: AsyncSession = Depends(get_db), _: User = Depends(get_current_user)):
+    service = DriverService(db)
+    driver = await service.get_by_id(driver_id)
+    if not driver:
+        raise HTTPException(status_code=404, detail="Driver not found")
+    return driver
+
+
+@router.post("", response_model=DriverRead, status_code=status.HTTP_201_CREATED)
+async def create_driver(data: DriverCreate, db: AsyncSession = Depends(get_db), _: User = Depends(require_fleet_manager)):
+    service = DriverService(db)
+    return await service.create(data)
+
+
+@router.patch("/{driver_id}", response_model=DriverRead)
+async def update_driver(driver_id: UUID, data: DriverUpdate, db: AsyncSession = Depends(get_db), _: User = Depends(require_fleet_manager)):
+    service = DriverService(db)
+    try:
+        return await service.update(driver_id, data)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.delete("/{driver_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_driver(driver_id: UUID, db: AsyncSession = Depends(get_db), _: User = Depends(require_fleet_manager)):
+    service = DriverService(db)
+    try:
+        await service.delete(driver_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

@@ -1,0 +1,47 @@
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ _('dashboard.maintenance_overview') }}</h3>
+        <a href="/maintenance" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">{{ _('common.view_all') }}</a>
+    </div>
+
+    <!-- Kanban-style mini summary -->
+    <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg">
+            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ stats.scheduled }}</p>
+            <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">{{ _('status.scheduled') }}</p>
+        </div>
+        <div class="text-center p-3 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg">
+            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ stats.in_progress }}</p>
+            <p class="text-xs text-yellow-600/70 dark:text-yellow-400/70 mt-1">{{ _('status.in_progress') }}</p>
+        </div>
+        <div class="text-center p-3 bg-green-50 dark:bg-green-900/10 rounded-lg">
+            <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ stats.completed }}</p>
+            <p class="text-xs text-green-600/70 dark:text-green-400/70 mt-1">{{ _('status.completed') }}</p>
+        </div>
+    </div>
+
+    <!-- Recent maintenance records -->
+    {% if recent|length > 0 %}
+    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">{{ _('dashboard.recent_maintenance') }}</h4>
+    <div class="space-y-2">
+        {% for r in recent %}
+        <a href="/maintenance/{{ r.id }}" class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                    {% if r.status == 'scheduled' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
+                    {% elif r.status == 'in_progress' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400
+                    {% elif r.status == 'completed' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                    {% else %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300{% endif %}
+                ">{{ _('status.' + r.status) }}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ r.title }}</span>
+            </div>
+            {% if r.scheduled_date %}
+            <span class="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap ml-2">{{ r.scheduled_date }}</span>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-sm text-gray-400 dark:text-gray-500">{{ _('dashboard.no_maintenance_data') }}</p>
+    {% endif %}
+</div>

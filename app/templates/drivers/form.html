@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{% if driver %}{{ _('btn.edit') }}{% else %}{{ _('btn.create') }}{% endif %} — {{ _('nav.drivers') }}{% endblock %}
+{% block page_title %}{% if driver %}{{ _('btn.edit') }}: {{ driver.full_name }}{% else %}{{ _('btn.create') }}{% endif %}{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+    {% if error %}<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{{ error }}</div>{% endif %}
+    <form method="POST" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% macro input(name, label, value="", required=false, type="text") %}
+            <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ label }}</label>
+            <input type="{{ type }}" name="{{ name }}" value="{{ value }}" {% if required %}required{% endif %} class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none focus:ring-2 focus:ring-primary-500"></div>
+            {% endmacro %}
+            {{ input("full_name", "Full Name", driver.full_name if driver else "", true) }}
+            {{ input("employee_id", "Employee ID", driver.employee_id if driver and driver.employee_id else "") }}
+            {{ input("phone", "Phone", driver.phone if driver and driver.phone else "") }}
+            {{ input("email", "Email", driver.email if driver and driver.email else "", type="email") }}
+            {{ input("license_number", "License Number", driver.license_number if driver and driver.license_number else "") }}
+            {{ input("license_category", "License Category", driver.license_category if driver and driver.license_category else "") }}
+            {{ input("department", "Department", driver.department if driver and driver.department else "") }}
+            {% if driver %}
+            <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+            <select name="status" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm">
+                {% for s in statuses %}<option value="{{ s.value }}" {% if s.value == driver.status.value %}selected{% endif %}>{{ s.value }}</option>{% endfor %}
+            </select></div>
+            {% endif %}
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+        <textarea name="notes" rows="3" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm outline-none">{{ driver.notes if driver and driver.notes else "" }}</textarea></div>
+        <div class="flex items-center gap-3">
+            <button type="submit" class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg font-medium">{{ _('btn.save') }}</button>
+            <a href="/drivers{% if driver %}/{{ driver.id }}{% endif %}" class="px-6 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">{{ _('btn.cancel') }}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

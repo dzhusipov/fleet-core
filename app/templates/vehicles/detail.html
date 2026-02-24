@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vehicle.brand }} {{ vehicle.model }} — {{ _('app_name') }}{% endblock %}
+{% block page_title %}{{ vehicle.license_plate }} — {{ vehicle.brand }} {{ vehicle.model }}{% endblock %}
+
+{% block content %}
+<div class="mb-4 flex items-center gap-3">
+    <a href="/vehicles" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+        {% if vehicle.status.value == 'active' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+        {% elif vehicle.status.value == 'in_maintenance' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400
+        {% elif vehicle.status.value == 'decommissioned' %}bg-gray-100 text-gray-800
+        {% else %}bg-blue-100 text-blue-800{% endif %}">
+        {{ vehicle.status.value }}
+    </span>
+    {% if user.role.value in ['admin', 'fleet_manager'] %}
+    <a href="/vehicles/{{ vehicle.id }}/edit" class="ml-auto px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg">{{ _('btn.edit') }}</a>
+    {% endif %}
+</div>
+
+<!-- Tabs -->
+<div x-data="{ tab: 'info' }" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div class="border-b border-gray-200 dark:border-gray-700">
+        <nav class="flex gap-0">
+            {% for t, label in [('info', 'Info'), ('mileage', 'Mileage'), ('maintenance', 'Maintenance'), ('expenses', 'Expenses'), ('contracts', 'Contracts'), ('documents', 'Documents')] %}
+            <button @click="tab = '{{ t }}'"
+                    :class="tab === '{{ t }}' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                    class="px-6 py-3 text-sm font-medium border-b-2 transition">
+                {{ label }}
+            </button>
+            {% endfor %}
+        </nav>
+    </div>
+
+    <!-- Info tab -->
+    <div x-show="tab === 'info'" class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% macro field(label, value) %}
+            <div>
+                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ label }}</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ value or '—' }}</dd>
+            </div>
+            {% endmacro %}
+
+            {{ field('License Plate', vehicle.license_plate) }}
+            {{ field('VIN', vehicle.vin) }}
+            {{ field('Brand / Model', vehicle.brand ~ ' ' ~ vehicle.model) }}
+            {{ field('Year', vehicle.year) }}
+            {{ field('Color', vehicle.color) }}
+            {{ field('Body Type', vehicle.body_type.value) }}
+            {{ field('Fuel Type', vehicle.fuel_type.value) }}
+            {{ field('Engine Volume', (vehicle.engine_volume ~ ' L') if vehicle.engine_volume else '—') }}
+            {{ field('Transmission', vehicle.transmission.value) }}
+            {{ field('Seats', vehicle.seats) }}
+            {{ field('Mileage', "{:,}".format(vehicle.current_mileage) ~ ' km') }}
+            {{ field('Department', vehicle.department) }}
+            {{ field('Purchase Date', vehicle.purchase_date) }}
+            {{ field('Purchase Price', vehicle.purchase_price) }}
+        </div>
+        {% if vehicle.notes %}
+        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</dt>
+            <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ vehicle.notes }}</dd>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Placeholder tabs -->
+    {% for t in ['mileage', 'maintenance', 'expenses', 'contracts', 'documents'] %}
+    <div x-show="tab === '{{ t }}'" class="p-6">
+        <p class="text-gray-400">{{ t|title }} data will appear here.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

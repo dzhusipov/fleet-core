@@ -1,0 +1,49 @@
+// FleetCore frontend utilities
+
+// HTMX event handlers
+document.addEventListener('htmx:afterSwap', function(event) {
+    // Re-init Alpine components after HTMX swap
+    if (window.Alpine) {
+        Alpine.initTree(event.detail.target);
+    }
+});
+
+// Toast notifications
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.innerHTML = `
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => { show = false; setTimeout(() => $el.parentElement.remove(), 300) }, 4000)"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-x-0"
+             x-transition:leave-end="opacity-0 translate-x-full"
+             class="flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border
+                    ${type === 'success' ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400' :
+                      type === 'error' ? 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400' :
+                      'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400'}">
+            <span class="text-sm">${message}</span>
+            <button @click="show = false; setTimeout(() => $el.closest('[x-data]').parentElement.remove(), 300)" class="ml-2 opacity-60 hover:opacity-100">&times;</button>
+        </div>
+    `;
+    container.appendChild(toast);
+    if (window.Alpine) {
+        Alpine.initTree(toast);
+    }
+}
+
+// Listen for HTMX response headers for toasts
+document.addEventListener('htmx:afterRequest', function(event) {
+    const xhr = event.detail.xhr;
+    if (!xhr) return;
+    const toast = xhr.getResponseHeader('HX-Trigger');
+    if (toast) {
+        try {
+            const triggers = JSON.parse(toast);
+            if (triggers.showToast) {
+                showToast(triggers.showToast.message, triggers.showToast.type);
+            }
+        } catch (e) { /* not JSON */ }
+    }
+});

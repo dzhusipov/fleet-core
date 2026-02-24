@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ driver.full_name }} — {{ _('app_name') }}{% endblock %}
+{% block page_title %}{{ driver.full_name }}{% endblock %}
+{% block content %}
+<div class="mb-4 flex items-center gap-3">
+    <a href="/drivers" class="text-gray-500 hover:text-gray-700"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></a>
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if driver.status.value == 'active' %}bg-green-100 text-green-800{% elif driver.status.value == 'on_leave' %}bg-yellow-100 text-yellow-800{% else %}bg-gray-100 text-gray-800{% endif %}">{{ driver.status.value }}</span>
+    {% if user.role.value in ['admin', 'fleet_manager'] %}
+    <a href="/drivers/{{ driver.id }}/edit" class="ml-auto px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg">{{ _('btn.edit') }}</a>
+    {% endif %}
+</div>
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% macro field(label, value) %}<div><dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ label }}</dt><dd class="mt-1 text-sm">{{ value or '—' }}</dd></div>{% endmacro %}
+        {{ field('Full Name', driver.full_name) }}
+        {{ field('Employee ID', driver.employee_id) }}
+        {{ field('Phone', driver.phone) }}
+        {{ field('Email', driver.email) }}
+        {{ field('License Number', driver.license_number) }}
+        {{ field('License Category', driver.license_category) }}
+        {{ field('License Expiry', driver.license_expiry) }}
+        {{ field('Medical Expiry', driver.medical_expiry) }}
+        {{ field('Department', driver.department) }}
+        {{ field('Hire Date', driver.hire_date) }}
+    </div>
+</div>
+{% endblock %}

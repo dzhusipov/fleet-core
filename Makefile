@@ -1,4 +1,4 @@
-.PHONY: up down build migrate migrate-gen seed test lint format install shell
+.PHONY: up down build migrate migrate-gen seed test lint format install shell css css-watch
 
 up:
 	docker compose up -d
@@ -36,3 +36,9 @@ shell:
 
 superuser:
 	python -m scripts.create_superuser
+
+css:
+	./tailwindcss -i static/css/input.css -o static/css/app.css --minify
+
+css-watch:
+	./tailwindcss -i static/css/input.css -o static/css/app.css --watch

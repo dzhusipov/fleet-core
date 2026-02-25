@@ -48,8 +48,8 @@ minio_data/
 # Alembic
 alembic/versions/__pycache__/
 
-# Static build artifacts
-static/css/output.css
+# Tailwind CSS standalone CLI binary
+tailwindcss
 
 # Uploads (local dev)
 uploads/

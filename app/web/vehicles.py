@@ -7,6 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.vehicle import BodyType, FuelType, TransmissionType, VehicleStatus
 from app.schemas.vehicle import VehicleCreate, VehicleUpdate
+from app.services.contract_service import ContractService
+from app.services.expense_service import ExpenseService
+from app.services.maintenance_service import MaintenanceService
+from app.services.mileage_service import MileageService
 from app.services.vehicle_service import VehicleService
 from app.repositories.base import BaseRepository
 from app.web.deps import get_web_user
@@ -216,3 +220,77 @@ async def vehicle_update(request: Request, vehicle_id: UUID, db: AsyncSession = 
                 **request.app.state.template_globals(request),
             },
         )
+
+
+# ---- HTMX widget endpoints for vehicle detail tabs ----
+
+
+@router.get("/{vehicle_id}/tab/mileage", response_class=HTMLResponse)
+async def vehicle_tab_mileage(
+    request: Request, vehicle_id: UUID, db: AsyncSession = Depends(get_db),
+):
+    user = await get_web_user(request, db)
+    if not user:
+        return HTMLResponse("", status_code=401)
+    service = MileageService(db)
+    logs = await service.get_history(vehicle_id, limit=50)
+    templates = request.app.state.templates
+    ctx = request.app.state.template_globals(request)
+    return templates.TemplateResponse(
+        "vehicles/partials/tab_mileage.html",
+        {"request": request, "logs": logs, "vehicle_id": str(vehicle_id), **ctx},
+    )
+
+
+@router.get("/{vehicle_id}/tab/maintenance", response_class=HTMLResponse)
+async def vehicle_tab_maintenance(
+    request: Request, vehicle_id: UUID, db: AsyncSession = Depends(get_db),
+):
+    user = await get_web_user(request, db)
+    if not user:
+        return HTMLResponse("", status_code=401)
+    service = MaintenanceService(db)
+    records, total = await service.list_for_vehicle(vehicle_id, limit=30)
+    templates = request.app.state.templates
+    ctx = request.app.state.template_globals(request)
+    return templates.TemplateResponse(
+        "vehicles/partials/tab_maintenance.html",
+        {"request": request, "records": records, "total": total,
+         "vehicle_id": str(vehicle_id), **ctx},
+    )
+
+
+@router.get("/{vehicle_id}/tab/expenses", response_class=HTMLResponse)
+async def vehicle_tab_expenses(
+    request: Request, vehicle_id: UUID, db: AsyncSession = Depends(get_db),
+):
+    user = await get_web_user(request, db)
+    if not user:
+        return HTMLResponse("", status_code=401)
+    service = ExpenseService(db)
+    records, total = await service.list_for_vehicle(vehicle_id, limit=30)
+    templates = request.app.state.templates
+    ctx = request.app.state.template_globals(request)
+    return templates.TemplateResponse(
+        "vehicles/partials/tab_expenses.html",
+        {"request": request, "records": records, "total": total,
+         "vehicle_id": str(vehicle_id), **ctx},
+    )
+
+
+@router.get("/{vehicle_id}/tab/contracts", response_class=HTMLResponse)
+async def vehicle_tab_contracts(
+    request: Request, vehicle_id: UUID, db: AsyncSession = Depends(get_db),
+):
+    user = await get_web_user(request, db)
+    if not user:
+        return HTMLResponse("", status_code=401)
+    service = ContractService(db)
+    records, total = await service.list_for_vehicle(vehicle_id, limit=30)
+    templates = request.app.state.templates
+    ctx = request.app.state.template_globals(request)
+    return templates.TemplateResponse(
+        "vehicles/partials/tab_contracts.html",
+        {"request": request, "records": records, "total": total,
+         "vehicle_id": str(vehicle_id), **ctx},
+    )

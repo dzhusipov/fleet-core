@@ -4,21 +4,44 @@
 {% block content %}
 <div class="mb-4 flex items-center gap-3">
     <a href="/maintenance" class="text-gray-500 hover:text-gray-700"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></a>
-    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if record.status.value == 'completed' %}bg-green-100 text-green-800{% elif record.status.value == 'in_progress' %}bg-blue-100 text-blue-800{% elif record.status.value == 'scheduled' %}bg-yellow-100 text-yellow-800{% else %}bg-gray-100 text-gray-800{% endif %}">{{ record.status.value }}</span>
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if record.status.value == 'completed' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400{% elif record.status.value == 'in_progress' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400{% elif record.status.value == 'scheduled' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400{% else %}bg-gray-100 text-gray-800{% endif %}">{{ _('status.' + record.status.value) }}</span>
 </div>
+
+{# Info card #}
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% macro field(label, value) %}<div><dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ label }}</dt><dd class="mt-1 text-sm">{{ value or '—' }}</dd></div>{% endmacro %}
-        {{ field('Type', record.type.value) }}
-        {{ field('Scheduled Date', record.scheduled_date) }}
-        {{ field('Completed Date', record.completed_date) }}
-        {{ field('Cost', record.cost) }}
-        {{ field('Service Provider', record.service_provider) }}
-        {{ field('Performed By', record.performed_by) }}
-        {{ field('Mileage at Service', record.mileage_at_service) }}
-        {{ field('Next Service Mileage', record.next_service_mileage) }}
-        {{ field('Next Service Date', record.next_service_date) }}
+        {% macro field(label, value) %}<div><dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ label }}</dt><dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ value or '—' }}</dd></div>{% endmacro %}
+        {{ field(_('common.type'), _('maintenance_type.' + record.type.value)) }}
+        {{ field(_('maintenance.scheduled_date'), record.scheduled_date) }}
+        {{ field(_('maintenance.completed_date'), record.completed_date) }}
+        {{ field(_('maintenance.cost'), "{:,.0f}".format(record.cost) ~ ' KZT' if record.cost else '—') }}
+        {{ field(_('maintenance.service_provider'), record.service_provider) }}
+        {{ field(_('maintenance.mileage_at_service'), "{:,}".format(record.mileage_at_service) ~ ' km' if record.mileage_at_service else '—') }}
     </div>
-    {% if record.description %}<div class="mt-6 pt-6 border-t border-gray-200"><dt class="text-xs font-medium text-gray-500 uppercase">Description</dt><dd class="mt-1 text-sm whitespace-pre-wrap">{{ record.description }}</dd></div>{% endif %}
+    {% if record.description %}
+    <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ _('common.description') }}</dt>
+        <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ record.description }}</dd>
+    </div>
+    {% endif %}
+</div>
+
+{# Documents section #}
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ _('docs.title') }}</h3>
+
+    <div hx-get="/documents/gallery/maintenance/{{ record.id }}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+        <div class="text-center py-4 text-gray-400">
+            <svg class="animate-spin w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+        </div>
+    </div>
+
+    {% if user.role.value in ['admin', 'fleet_manager'] %}
+    {% with entity_type='maintenance', entity_id=record.id|string, doc_type='invoice' %}
+    {% include 'components/upload.html' %}
+    {% endwith %}
+    {% endif %}
 </div>
 {% endblock %}

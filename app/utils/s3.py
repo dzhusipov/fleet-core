@@ -19,15 +19,29 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 class S3Client:
     def __init__(self):
+        scheme = "https" if settings.MINIO_USE_SSL else "http"
         self.client = boto3.client(
             "s3",
-            endpoint_url=f"{'https' if settings.MINIO_USE_SSL else 'http'}://{settings.MINIO_ENDPOINT}",
+            endpoint_url=f"{scheme}://{settings.MINIO_ENDPOINT}",
             aws_access_key_id=settings.MINIO_ACCESS_KEY,
             aws_secret_access_key=settings.MINIO_SECRET_KEY,
             config=Config(signature_version="s3v4"),
             region_name="us-east-1",
         )
         self.bucket = settings.MINIO_BUCKET
+
+        # Separate client for browser-facing presigned URLs.
+        # Uses external endpoint (e.g. localhost:9000) so URLs are
+        # accessible from outside Docker.
+        ext = settings.MINIO_EXTERNAL_ENDPOINT or settings.MINIO_ENDPOINT
+        self._presign_client = boto3.client(
+            "s3",
+            endpoint_url=f"{scheme}://{ext}",
+            aws_access_key_id=settings.MINIO_ACCESS_KEY,
+            aws_secret_access_key=settings.MINIO_SECRET_KEY,
+            config=Config(signature_version="s3v4"),
+            region_name="us-east-1",
+        )
 
     def ensure_bucket(self):
         try:
@@ -47,7 +61,7 @@ class S3Client:
         return s3_key
 
     def get_presigned_url(self, s3_key: str, expires: int = 3600) -> str:
-        return self.client.generate_presigned_url(
+        return self._presign_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": self.bucket, "Key": s3_key},
             ExpiresIn=expires,

@@ -41,41 +41,54 @@
     {% endif %}
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('expenseChart');
-        if (!ctx) return;
-        const labels = {{ data.monthly | map(attribute='month') | list | tojson }};
-        const values = {{ data.monthly | map(attribute='total') | list | tojson }};
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels.map(l => {
-                    const d = new Date(l);
-                    return d.toLocaleDateString('{{ lang }}', {month: 'short', year: '2-digit'});
-                }),
-                datasets: [{
-                    data: values,
-                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                    borderColor: 'rgb(59, 130, 246)',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: v => (v/1000).toFixed(0) + 'k'
+    (function() {
+        function initExpenseChart() {
+            const ctx = document.getElementById('expenseChart');
+            if (!ctx) return;
+            if (typeof Chart === 'undefined') {
+                setTimeout(initExpenseChart, 100);
+                return;
+            }
+            const labels = {{ data.monthly | map(attribute='month') | list | tojson }};
+            const values = {{ data.monthly | map(attribute='total') | list | tojson }};
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(l => {
+                        const d = new Date(l);
+                        return d.toLocaleDateString('{{ lang }}', {month: 'short', year: '2-digit'});
+                    }),
+                    datasets: [{
+                        data: values,
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: v => (v/1000000).toFixed(1) + 'M',
+                                color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280'
+                            },
+                            grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(75,85,99,0.3)' : 'rgba(229,231,235,0.8)' }
+                        },
+                        x: {
+                            ticks: { color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280' },
+                            grid: { display: false }
                         }
                     }
                 }
-            }
-        });
-    });
+            });
+        }
+        initExpenseChart();
+    })();
     </script>
     {% else %}
     <div class="h-48 flex items-center justify-center text-gray-400 dark:text-gray-500">

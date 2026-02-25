@@ -1,0 +1,73 @@
+{# Document gallery component — shows uploaded files with preview/download/delete #}
+{# Variables: documents, entity_type, entity_id, can_edit #}
+
+<div id="doc-gallery" class="space-y-3">
+    {% if documents %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {% for doc in documents %}
+        <div id="doc-{{ doc.id }}" class="group relative bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+            {# Preview area #}
+            <a href="/documents/{{ doc.id }}/download" target="_blank" class="block">
+                {% if doc.mime_type and doc.mime_type.startswith('image/') and doc._preview_url %}
+                <div class="aspect-square bg-gray-100 dark:bg-gray-800">
+                    <img src="{{ doc._preview_url }}" alt="{{ doc.filename }}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                {% elif doc.mime_type == 'application/pdf' %}
+                <div class="aspect-square flex items-center justify-center bg-red-50 dark:bg-red-900/20">
+                    <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        <text x="12" y="16" text-anchor="middle" fill="currentColor" font-size="5" font-weight="bold">PDF</text>
+                    </svg>
+                </div>
+                {% else %}
+                <div class="aspect-square flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                {% endif %}
+            </a>
+
+            {# File info #}
+            <div class="p-2">
+                <p class="text-xs text-gray-700 dark:text-gray-300 truncate" title="{{ doc.filename }}">{{ doc.filename }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                    {% if doc.size_bytes < 1024 %}{{ doc.size_bytes }} B
+                    {% elif doc.size_bytes < 1048576 %}{{ "%.1f"|format(doc.size_bytes / 1024) }} KB
+                    {% else %}{{ "%.1f"|format(doc.size_bytes / 1048576) }} MB{% endif %}
+                    <span class="mx-1">&middot;</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs
+                        {% if doc.type.value == 'photo' %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
+                        {% elif doc.type.value == 'invoice' %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400
+                        {% elif doc.type.value == 'contract' %}bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400
+                        {% elif doc.type.value in ('license', 'medical') %}bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400
+                        {% else %}bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300{% endif %}">
+                        {{ _('doc_type.' + doc.type.value) }}
+                    </span>
+                </p>
+            </div>
+
+            {# Delete button (visible on hover) #}
+            {% if can_edit %}
+            <button hx-delete="/documents/{{ doc.id }}"
+                    hx-target="#doc-{{ doc.id }}"
+                    hx-swap="outerHTML"
+                    hx-confirm="{{ _('docs.confirm_delete') }}"
+                    class="absolute top-1.5 right-1.5 p-1 rounded-full bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-400 dark:text-gray-500">
+        <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p class="text-sm">{{ _('docs.no_documents') }}</p>
+    </div>
+    {% endif %}
+</div>

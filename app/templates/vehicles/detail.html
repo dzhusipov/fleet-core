@@ -13,7 +13,7 @@
         {% elif vehicle.status.value == 'in_maintenance' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400
         {% elif vehicle.status.value == 'decommissioned' %}bg-gray-100 text-gray-800
         {% else %}bg-blue-100 text-blue-800{% endif %}">
-        {{ vehicle.status.value }}
+        {{ _('status.' + vehicle.status.value) }}
     </span>
     {% if user.role.value in ['admin', 'fleet_manager'] %}
     <a href="/vehicles/{{ vehicle.id }}/edit" class="ml-auto px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg">{{ _('btn.edit') }}</a>
@@ -23,12 +23,12 @@
 <!-- Tabs -->
 <div x-data="{ tab: 'info' }" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
     <div class="border-b border-gray-200 dark:border-gray-700">
-        <nav class="flex gap-0">
-            {% for t, label in [('info', 'Info'), ('mileage', 'Mileage'), ('maintenance', 'Maintenance'), ('expenses', 'Expenses'), ('contracts', 'Contracts'), ('documents', 'Documents')] %}
+        <nav class="flex gap-0 overflow-x-auto">
+            {% for t, label_key in [('info', 'docs.tab_info'), ('mileage', 'docs.tab_mileage'), ('maintenance', 'docs.tab_maintenance'), ('expenses', 'docs.tab_expenses'), ('contracts', 'docs.tab_contracts'), ('documents', 'docs.tab_documents')] %}
             <button @click="tab = '{{ t }}'"
                     :class="tab === '{{ t }}' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="px-6 py-3 text-sm font-medium border-b-2 transition">
-                {{ label }}
+                    class="px-6 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap">
+                {{ _(label_key) }}
             </button>
             {% endfor %}
         </nav>
@@ -44,34 +44,92 @@
             </div>
             {% endmacro %}
 
-            {{ field('License Plate', vehicle.license_plate) }}
-            {{ field('VIN', vehicle.vin) }}
-            {{ field('Brand / Model', vehicle.brand ~ ' ' ~ vehicle.model) }}
-            {{ field('Year', vehicle.year) }}
-            {{ field('Color', vehicle.color) }}
-            {{ field('Body Type', vehicle.body_type.value) }}
-            {{ field('Fuel Type', vehicle.fuel_type.value) }}
-            {{ field('Engine Volume', (vehicle.engine_volume ~ ' L') if vehicle.engine_volume else '—') }}
-            {{ field('Transmission', vehicle.transmission.value) }}
-            {{ field('Seats', vehicle.seats) }}
-            {{ field('Mileage', "{:,}".format(vehicle.current_mileage) ~ ' km') }}
-            {{ field('Department', vehicle.department) }}
-            {{ field('Purchase Date', vehicle.purchase_date) }}
-            {{ field('Purchase Price', vehicle.purchase_price) }}
+            {{ field(_('vehicle.license_plate'), vehicle.license_plate) }}
+            {{ field(_('vehicle.vin'), vehicle.vin) }}
+            {{ field(_('vehicle.brand') ~ ' / ' ~ _('vehicle.model'), vehicle.brand ~ ' ' ~ vehicle.model) }}
+            {{ field(_('vehicle.year'), vehicle.year) }}
+            {{ field(_('vehicle.color'), vehicle.color) }}
+            {{ field(_('vehicle.body_type'), _('body_type.' + vehicle.body_type.value)) }}
+            {{ field(_('vehicle.fuel_type'), _('fuel_type.' + vehicle.fuel_type.value)) }}
+            {{ field(_('vehicle.engine_volume'), (vehicle.engine_volume ~ ' L') if vehicle.engine_volume else '—') }}
+            {{ field(_('vehicle.transmission'), _('transmission.' + vehicle.transmission.value)) }}
+            {{ field(_('vehicle.seats'), vehicle.seats) }}
+            {{ field(_('vehicle.current_mileage'), "{:,}".format(vehicle.current_mileage) ~ ' km') }}
+            {{ field(_('vehicle.department'), vehicle.department) }}
+            {{ field(_('vehicle.purchase_date'), vehicle.purchase_date) }}
+            {{ field(_('vehicle.purchase_price'), "{:,.0f}".format(vehicle.purchase_price) ~ ' KZT' if vehicle.purchase_price else '—') }}
         </div>
         {% if vehicle.notes %}
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</dt>
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ _('common.notes') }}</dt>
             <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ vehicle.notes }}</dd>
         </div>
         {% endif %}
     </div>
 
-    <!-- Placeholder tabs -->
-    {% for t in ['mileage', 'maintenance', 'expenses', 'contracts', 'documents'] %}
-    <div x-show="tab === '{{ t }}'" class="p-6">
-        <p class="text-gray-400">{{ t|title }} data will appear here.</p>
+    <!-- Mileage tab -->
+    <div x-show="tab === 'mileage'" class="p-6">
+        <div hx-get="/vehicles/{{ vehicle.id }}/tab/mileage"
+             hx-trigger="intersect once"
+             hx-swap="innerHTML">
+            <div class="text-center py-6 text-gray-400">
+                <svg class="animate-spin w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            </div>
+        </div>
     </div>
-    {% endfor %}
+
+    <!-- Maintenance tab -->
+    <div x-show="tab === 'maintenance'" class="p-6">
+        <div hx-get="/vehicles/{{ vehicle.id }}/tab/maintenance"
+             hx-trigger="intersect once"
+             hx-swap="innerHTML">
+            <div class="text-center py-6 text-gray-400">
+                <svg class="animate-spin w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expenses tab -->
+    <div x-show="tab === 'expenses'" class="p-6">
+        <div hx-get="/vehicles/{{ vehicle.id }}/tab/expenses"
+             hx-trigger="intersect once"
+             hx-swap="innerHTML">
+            <div class="text-center py-6 text-gray-400">
+                <svg class="animate-spin w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contracts tab -->
+    <div x-show="tab === 'contracts'" class="p-6">
+        <div hx-get="/vehicles/{{ vehicle.id }}/tab/contracts"
+             hx-trigger="intersect once"
+             hx-swap="innerHTML">
+            <div class="text-center py-6 text-gray-400">
+                <svg class="animate-spin w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents tab -->
+    <div x-show="tab === 'documents'" class="p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ _('docs.title') }}</h3>
+
+        {# Document gallery - lazy loaded via HTMX #}
+        <div hx-get="/documents/gallery/vehicle/{{ vehicle.id }}"
+             hx-trigger="intersect once"
+             hx-swap="innerHTML">
+            <div class="text-center py-8 text-gray-400">
+                <svg class="animate-spin w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            </div>
+        </div>
+
+        {# Upload form #}
+        {% if user.role.value in ['admin', 'fleet_manager'] %}
+        {% with entity_type='vehicle', entity_id=vehicle.id|string, doc_type='photo' %}
+        {% include 'components/upload.html' %}
+        {% endwith %}
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

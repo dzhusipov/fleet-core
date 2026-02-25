@@ -37,6 +37,7 @@ class Settings(BaseSettings):
 
     # MinIO / S3
     MINIO_ENDPOINT: str = ""
+    MINIO_EXTERNAL_ENDPOINT: str = ""  # Browser-accessible endpoint (e.g. localhost:9000)
     MINIO_ACCESS_KEY: str = ""
     MINIO_SECRET_KEY: str = ""
     MINIO_BUCKET: str = "fleetcore"

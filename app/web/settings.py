@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.audit_log import AuditLog
@@ -59,7 +60,7 @@ async def audit_log_page(
     templates = request.app.state.templates
     ctx = request.app.state.template_globals(request)
 
-    query = select(AuditLog).order_by(AuditLog.timestamp.desc())
+    query = select(AuditLog).options(selectinload(AuditLog.user)).order_by(AuditLog.timestamp.desc())
     count_query = select(func.count()).select_from(AuditLog)
 
     if action:

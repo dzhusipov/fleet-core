@@ -1,0 +1,57 @@
+{# Expenses tab partial for vehicle detail #}
+{% if records %}
+<div class="overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('common.date') }}</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('common.category') }}</th>
+                <th class="px-4 py-3 text-right font-medium text-gray-500">{{ _('common.amount') }}</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('common.vendor') }}</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-500">{{ _('common.description') }}</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+            {% for e in records %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ e.date }}</td>
+                <td class="px-4 py-3">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                        {% if e.category.value == 'fuel' %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
+                        {% elif e.category.value == 'parts' %}bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400
+                        {% elif e.category.value == 'service' %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400
+                        {% elif e.category.value == 'insurance' %}bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400
+                        {% elif e.category.value == 'fine' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
+                        {% else %}bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                        {{ _('expense_category.' + e.category.value) }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-right font-mono font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    {{ "{:,.0f}".format(e.amount) }} ₸
+                </td>
+                <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ e.vendor or '' }}</td>
+                <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
+                    {% if e.category.value == 'fuel' and e.fuel_liters %}
+                        {{ e.fuel_liters }} {{ _('reports.liters_unit') }} &middot; {{ e.fuel_type or '' }}
+                    {% else %}
+                        {{ e.description or '' }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% set total_amount = records | map(attribute='amount') | sum %}
+<div class="mt-3 px-4 flex items-center justify-between">
+    <p class="text-xs text-gray-400">{{ _('vtab.showing_of', count=records|length, total=total) }}</p>
+    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ _('common.total') }}: {{ "{:,.0f}".format(total_amount) }} ₸</p>
+</div>
+{% else %}
+<div class="text-center py-8 text-gray-400">
+    <svg class="w-10 h-10 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-sm">{{ _('vtab.no_expenses') }}</p>
+</div>
+{% endif %}

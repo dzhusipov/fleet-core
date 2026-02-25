@@ -57,21 +57,21 @@ Open http://localhost:8000 in your browser.
 
 ## Screenshots
 
-| Dashboard | Vehicles |
-|:---------:|:--------:|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Vehicles](docs/screenshots/vehicles.png) |
+| Login | Dashboard |
+|:-----:|:---------:|
+| ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) |
+
+| Vehicles | Drivers |
+|:--------:|:-------:|
+| ![Vehicles](docs/screenshots/vehicles.png) | ![Drivers](docs/screenshots/drivers.png) |
 
 | Maintenance | Expenses |
 |:-----------:|:--------:|
 | ![Maintenance](docs/screenshots/maintenance.png) | ![Expenses](docs/screenshots/expenses.png) |
 
-| Drivers | Contracts |
-|:-------:|:---------:|
-| ![Drivers](docs/screenshots/drivers.png) | ![Contracts](docs/screenshots/contracts.png) |
-
-| Reports | Settings |
-|:-------:|:--------:|
-| ![Reports](docs/screenshots/reports.png) | ![Settings](docs/screenshots/settings.png) |
+| Contracts | Reports |
+|:---------:|:-------:|
+| ![Contracts](docs/screenshots/contracts.png) | ![Reports](docs/screenshots/reports.png) |
 
 ## Features
 

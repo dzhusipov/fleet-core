@@ -54,6 +54,11 @@ static/css/output.css
 # Uploads (local dev)
 uploads/
 
+# Node (Playwright etc.)
+node_modules/
+package.json
+package-lock.json
+
 # Celery
 celerybeat-schedule
 celerybeat-schedule.db

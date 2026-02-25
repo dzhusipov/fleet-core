@@ -2,6 +2,8 @@
 
 Enterprise-grade fleet management system for 500+ vehicles. Self-hosted web application built with Python.
 
+![Dashboard](docs/screenshots/dashboard.png)
+
 ## Tech Stack
 
 - **Backend**: FastAPI (async) + SQLAlchemy 2.0 + Alembic
@@ -9,6 +11,7 @@ Enterprise-grade fleet management system for 500+ vehicles. Self-hosted web appl
 - **Database**: PostgreSQL 16
 - **Cache/Queue**: Redis 7 + Celery
 - **File Storage**: MinIO (S3-compatible)
+- **Secrets**: HashiCorp Vault (dev mode)
 - **Auth**: JWT + session cookies
 
 ## Quick Start
@@ -18,52 +21,57 @@ Enterprise-grade fleet management system for 500+ vehicles. Self-hosted web appl
 - Docker & Docker Compose
 - Python 3.12 (conda recommended)
 
-### 1. Clone and configure
+### 1. Start all services
 
 ```bash
-cp .env.example .env
-# Edit .env with your settings
+docker compose up -d
 ```
 
-### 2. Start infrastructure
+This launches PostgreSQL, Redis, MinIO, Vault (dev mode), the app, Celery worker, and Celery beat. Vault automatically generates a random `SECRET_KEY` and seeds all required secrets.
+
+### 2. Run migrations
 
 ```bash
-docker compose up -d db redis minio
+docker compose exec app alembic upgrade head
 ```
 
-### 3. Install dependencies
+### 3. Create superuser
 
 ```bash
-conda create -n fleet-core python=3.12 -c conda-forge
-conda activate fleet-core
-pip install -e ".[dev]"
+docker compose exec -it app python scripts/create_superuser.py
 ```
 
-### 4. Run migrations
+You will be prompted for username, email, full name, and password (minimum 8 characters).
+
+### 4. Seed demo data (optional)
 
 ```bash
-alembic upgrade head
+docker compose exec app python scripts/seed_data.py
 ```
 
-### 5. Create superuser
+Generates 500+ vehicles, 200+ drivers, maintenance records, expenses, and contracts with realistic Kazakh data.
 
-```bash
-python scripts/create_superuser.py
-```
-
-### 6. Seed demo data (optional)
-
-```bash
-python scripts/seed_data.py
-```
-
-### 7. Run the application
-
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+### 5. Open the application
 
 Open http://localhost:8000 in your browser.
+
+## Screenshots
+
+| Dashboard | Vehicles |
+|:---------:|:--------:|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Vehicles](docs/screenshots/vehicles.png) |
+
+| Maintenance | Expenses |
+|:-----------:|:--------:|
+| ![Maintenance](docs/screenshots/maintenance.png) | ![Expenses](docs/screenshots/expenses.png) |
+
+| Drivers | Contracts |
+|:-------:|:---------:|
+| ![Drivers](docs/screenshots/drivers.png) | ![Contracts](docs/screenshots/contracts.png) |
+
+| Reports | Settings |
+|:-------:|:--------:|
+| ![Reports](docs/screenshots/reports.png) | ![Settings](docs/screenshots/settings.png) |
 
 ## Features
 
@@ -99,9 +107,11 @@ Open http://localhost:8000 in your browser.
 | `driver` | View assigned vehicles, submit mileage |
 | `viewer` | Read-only dashboards and reports |
 
-### i18n
+### Internationalization
 
 Supported languages: Russian, English, Kazakh, Turkish.
+
+Language can be switched from the top navigation bar and is stored per user.
 
 ## API
 
@@ -114,6 +124,24 @@ REST API available at `/api/v1/`:
 - Full Swagger docs at `/docs`
 
 ## Development
+
+### Local development (without Docker for app)
+
+```bash
+# Create conda environment
+conda create -n fleet-core python=3.12 -c conda-forge
+conda activate fleet-core
+pip install -e ".[dev]"
+
+# Start infrastructure only
+docker compose up -d db redis minio vault vault-init
+
+# Run migrations
+alembic upgrade head
+
+# Start the app with hot-reload
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
 ### Run tests
 
@@ -141,7 +169,7 @@ celery -A app.tasks.celery_app worker -l info
 celery -A app.tasks.celery_app beat -l info
 ```
 
-## Project Structure
+## Architecture
 
 ```
 app/
@@ -157,16 +185,25 @@ app/
 └── utils/           # Security, S3, email, export utilities
 ```
 
-## Environment Variables
+**Pattern**: Routes → Services → Repositories → Database
 
-See `.env.example` for all configuration options:
+**Dual auth**: API uses JWT Bearer tokens, Web UI uses session cookies. Both resolve to the same User model.
 
-- `DATABASE_URL` — PostgreSQL connection string
-- `REDIS_URL` — Redis connection string
-- `SECRET_KEY` — JWT signing key
-- `MINIO_*` — MinIO/S3 configuration
-- `SMTP_*` — Email server settings
-- `TELEGRAM_*` — Telegram Bot API settings
+## Configuration
+
+All secrets are managed via **HashiCorp Vault** (dev mode in Docker Compose). The `vault-init` service automatically seeds:
+
+| Secret | Description |
+|--------|-------------|
+| `DATABASE_URL` | PostgreSQL async connection string |
+| `DATABASE_URL_SYNC` | PostgreSQL sync connection (for Celery) |
+| `REDIS_URL` | Redis connection string |
+| `SECRET_KEY` | JWT signing key (auto-generated) |
+| `MINIO_*` | MinIO S3 endpoint and credentials |
+| `SMTP_*` | Email server settings |
+| `TELEGRAM_*` | Telegram Bot API settings |
+
+For production, replace Vault dev mode with a proper Vault deployment or inject secrets via your orchestrator.
 
 ## License
 

@@ -1,3 +1,9 @@
+# ============================================================================
+# FleetCore Docker Compose — DEVELOPMENT ONLY
+# All tokens and credentials below are for local development.
+# DO NOT use these values in production.
+# ============================================================================
+
 services:
   # --- Vault (secrets management) ---
   vault:
@@ -5,7 +11,7 @@ services:
     cap_add:
       - IPC_LOCK
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: dev-token
+      VAULT_DEV_ROOT_TOKEN_ID: dev-token  # DEV ONLY — change in production
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
     ports:
       - "8200:8200"
@@ -23,7 +29,7 @@ services:
         condition: service_healthy
     environment:
       VAULT_ADDR: http://vault:8200
-      VAULT_TOKEN: dev-token
+      VAULT_TOKEN: dev-token  # DEV ONLY
     volumes:
       - ./scripts:/scripts:ro
     entrypoint: ["/bin/sh", "/scripts/vault-init.sh"]
@@ -80,7 +86,7 @@ services:
         condition: service_completed_successfully
     environment:
       VAULT_ADDR: http://vault:8200
-      VAULT_TOKEN: dev-token
+      VAULT_TOKEN: dev-token  # DEV ONLY
       APP_ENV: development
       APP_DEBUG: "true"
     volumes:
@@ -108,7 +114,7 @@ services:
         condition: service_completed_successfully
     environment:
       VAULT_ADDR: http://vault:8200
-      VAULT_TOKEN: dev-token
+      VAULT_TOKEN: dev-token  # DEV ONLY
     volumes:
       - ./app:/app/app
 
@@ -124,7 +130,7 @@ services:
         condition: service_completed_successfully
     environment:
       VAULT_ADDR: http://vault:8200
-      VAULT_TOKEN: dev-token
+      VAULT_TOKEN: dev-token  # DEV ONLY
     volumes:
       - ./app:/app/app
 

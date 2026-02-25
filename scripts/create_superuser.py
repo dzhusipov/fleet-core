@@ -12,7 +12,13 @@ async def main():
     username = input("Username [admin]: ").strip() or "admin"
     email = input("Email [admin@fleetcore.local]: ").strip() or "admin@fleetcore.local"
     full_name = input("Full name [Administrator]: ").strip() or "Administrator"
-    password = input("Password [admin123]: ").strip() or "admin123"
+    password = input("Password (required): ").strip()
+    if not password:
+        print("Error: password is required", file=sys.stderr)
+        sys.exit(1)
+    if len(password) < 8:
+        print("Error: password must be at least 8 characters", file=sys.stderr)
+        sys.exit(1)
 
     async with AsyncSessionLocal() as session:
         service = AuthService(session)

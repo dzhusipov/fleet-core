@@ -1,4 +1,8 @@
-"""Generate seed data for FleetCore: 500+ vehicles, drivers, maintenance, expenses, contracts."""
+"""Generate seed data for FleetCore: 500+ vehicles, drivers, maintenance, expenses, contracts.
+
+WARNING: This script creates demo users with a shared password (SeedPass!2024).
+         Use only in development/staging environments.
+"""
 
 import asyncio
 import random
@@ -178,7 +182,7 @@ async def seed():
                 email=f"manager{i+1}@fleetcore.kz",
                 username=f"manager{i+1}",
                 full_name=f"{random.choice(KZ_FIRST_NAMES)} {random.choice(KZ_LAST_NAMES)}",
-                hashed_password=hash_password("password123"),
+                hashed_password=hash_password("SeedPass!2024"),
                 role=UserRole.FLEET_MANAGER,
                 is_active=True,
                 language="ru",
@@ -190,7 +194,7 @@ async def seed():
                 email=f"viewer{i+1}@fleetcore.kz",
                 username=f"viewer{i+1}",
                 full_name=f"{random.choice(KZ_FIRST_NAMES)} {random.choice(KZ_LAST_NAMES)}",
-                hashed_password=hash_password("password123"),
+                hashed_password=hash_password("SeedPass!2024"),
                 role=UserRole.VIEWER,
                 is_active=True,
                 language="ru",

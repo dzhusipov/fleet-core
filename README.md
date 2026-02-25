@@ -207,4 +207,4 @@ For production, replace Vault dev mode with a proper Vault deployment or inject 
 
 ## License
 
-Proprietary. Internal use only.
+MIT License. See [LICENSE](LICENSE) for details.
